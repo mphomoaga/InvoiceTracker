@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Backend/InvoiceTracker.Api/InvoiceTracker.Api/InvoiceTracker.Api.csproj" />
+  <Project Path="Backend/InvoiceTracker.Application/InvoiceTracker.Application.csproj" />
+  <Project Path="Backend/InvoiceTracker.Domain/InvoiceTracker.Domain.csproj" />
+  <Project Path="Backend/InvoiceTracker.Infrastructure/InvoiceTracker.Infrastructure.csproj" />
+</Solution>

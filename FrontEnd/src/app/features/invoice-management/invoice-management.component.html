@@ -1,0 +1,165 @@
+<div class="invoice-management">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M7 3h7l4 4v14H7z" />
+          <path d="M14 3v5h5M10 13h5M10 17h5" />
+        </svg>
+      </span>
+      <span>InvoiceTracker</span>
+    </div>
+
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#">Dashboard</a>
+      <a class="active" href="#">Invoices</a>
+      <a href="#">Customers</a>
+      <a href="#">Payments</a>
+      <a href="#">Reports</a>
+    </nav>
+
+    <div class="user">
+      <span>Rorisang</span>
+      <span class="avatar">RA</span>
+      <button class="mobile-menu" aria-label="Open menu" type="button">☰</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="breadcrumb">Dashboard / <strong>Invoice Management</strong></div>
+
+    <section class="page-head">
+      <div>
+        <h1>Invoice Management</h1>
+        <p>Create, manage, deliver, and track customer invoices from one workspace.</p>
+      </div>
+
+      <button class="btn btn-primary" type="button" (click)="handleAction('Create Invoice')">
+        <svg width="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Create invoice
+      </button>
+    </section>
+
+    <section class="stats" aria-label="Invoice summary">
+      <article class="stat" *ngFor="let stat of stats">
+        <div>
+          <div class="stat-label">{{ stat.label }}</div>
+          <div class="stat-value">{{ stat.value }}</div>
+        </div>
+
+        <div class="stat-icon" [ngSwitch]="stat.icon" aria-hidden="true">
+          <svg *ngSwitchCase="'document'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 3h10v18H7zM10 8h4M10 12h4M10 16h3" />
+          </svg>
+          <svg *ngSwitchCase="'check'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+          <svg *ngSwitchCase="'clock'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+          <svg *ngSwitchCase="'warning'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3 2 21h20zM12 9v5M12 18h.01" />
+          </svg>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Invoice tools</h2>
+          <p>Choose an action to continue.</p>
+        </div>
+
+        <div class="toolbar">
+          <label class="search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" />
+              <path d="m20 20-4-4" />
+            </svg>
+            <input
+              type="search"
+              placeholder="Search tools"
+              aria-label="Search invoice tools"
+              [(ngModel)]="searchTerm"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div class="feature-grid" id="featureGrid">
+        <article class="feature" *ngFor="let feature of filteredFeatures; trackBy: trackFeature" [attr.data-name]="feature.name">
+          <div class="feature-top">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <span class="tag" *ngIf="feature.tag">{{ feature.tag }}</span>
+          </div>
+
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+          <button class="feature-link" type="button" (click)="handleAction(feature.title)">{{ feature.actionLabel }} →</button>
+        </article>
+      </div>
+    </section>
+
+    <section class="activity">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Recent invoices</h2>
+            <p>Latest billing activity</p>
+          </div>
+          <button class="btn btn-light" type="button">View all</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let invoice of recentInvoices">
+                <td>{{ invoice.invoiceNumber }}</td>
+                <td>{{ invoice.customer }}</td>
+                <td>{{ invoice.amount }}</td>
+                <td>
+                  <span class="status" [ngClass]="invoice.status">{{ invoice.status | titlecase }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Quick actions</h2>
+            <p>Frequent tasks</p>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <button
+            class="quick-action"
+            type="button"
+            *ngFor="let action of quickActions"
+            (click)="handleAction(action.action)"
+          >
+            <span>{{ action.icon }}</span>
+            {{ action.label }}
+          </button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="footer">© 2026 InvoiceTracker. Clean billing, clear cash flow.</footer>
+</div>

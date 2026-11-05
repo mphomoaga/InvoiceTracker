@@ -1,0 +1,64 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+
+namespace InvoiceTracker.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public sealed class AuthController(IConfiguration configuration) : ControllerBase
+{
+	[HttpPost("login")]
+	public IActionResult Login([FromBody] LoginRequest request)
+	{
+		var configuredUsername = configuration["Auth:Username"];
+		var configuredPassword = configuration["Auth:Password"];
+
+		if (string.IsNullOrWhiteSpace(configuredUsername) ||
+			string.IsNullOrWhiteSpace(configuredPassword) ||
+			request.Username != configuredUsername ||
+			request.Password != configuredPassword)
+		{
+			return Unauthorized(new { message = "Invalid username or password." });
+		}
+
+		var jwtKey = configuration["Jwt:Key"]
+			?? throw new InvalidOperationException("Jwt:Key is not configured.");
+
+		var issuer = configuration["Jwt:Issuer"];
+		var audience = configuration["Jwt:Audience"];
+		var expires = DateTime.UtcNow.AddMinutes(60);
+
+		var claims = new[]
+		{
+			new Claim(JwtRegisteredClaimNames.Sub, request.Username),
+			new Claim(ClaimTypes.Name, request.Username),
+			new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+		};
+
+		var credentials = new SigningCredentials(
+			new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+			SecurityAlgorithms.HmacSha256);
+
+		var token = new JwtSecurityToken(
+			issuer: issuer,
+			audience: audience,
+			claims: claims,
+			expires: expires,
+			signingCredentials: credentials);
+
+		return Ok(new LoginResponse(
+			AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
+			TokenType: "Bearer",
+			ExpiresAt: expires));
+	}
+
+	public sealed record LoginRequest(string Username, string Password);
+
+	public sealed record LoginResponse(
+		string AccessToken,
+		string TokenType,
+		DateTime ExpiresAt);
+}
