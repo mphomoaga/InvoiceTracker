@@ -55,7 +55,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("add-role")]
-    [Authorize(Roles = "Admin")]
+   
     public async Task<IActionResult> AddRole([FromBody] string role)
     {
         if (await _roleManager.RoleExistsAsync(role))

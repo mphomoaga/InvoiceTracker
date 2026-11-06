@@ -5,7 +5,7 @@ InvoiceTracker is an enterprise-grade Invoice Management and Payment Tracking pl
 ## Solution Architecture
 
 - Domain – Core business rules and entities
-- Application – Use cases, CQRS handlers, and business workflows
+- Application – business workflows
 - Infrastructure – Data persistence and external integrations
 - API – REST endpoints and presentation layer
 - Angular Frontend – Web application UI
@@ -35,9 +35,6 @@ InvoiceTracker/
 - .NET 9 Web API
 - Entity Framework Core
 - SQL Server
-- MediatR
-- FluentValidation
-- AutoMapper
 - Serilog
 
 ### Frontend
@@ -47,7 +44,8 @@ InvoiceTracker/
 - RxJS
 
 ### deployment
-- Docker
+- Docker or IIS Express
+- Node
 
 
 ## Getting Started
@@ -63,6 +61,8 @@ dotnet restore
 dotnet build
 dotnet run
 ```
+
+
 ### WebApi: 
 	Create a SQL Server database and update the connection string in `appsettings.json` of the API project.
 
@@ -70,5 +70,6 @@ dotnet run
 ```bash
 cd src/Frontend/invoicetracker-web
 npm install
-ng serve
+ng serve -o
 ```
+	-Change back-end port from the following File : environment.ts

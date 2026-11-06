@@ -1,6 +1,13 @@
 <Solution>
+  <Folder Name="/Backend/" />
+  <Folder Name="/Backend/InvoiceTracker.Api/" />
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
+  </Folder>
+  <Folder Name="/test/" />
+  <Folder Name="/test/BackEnd/" />
+  <Folder Name="/test/BackEnd/UnitTest/">
+    <Project Path="test/BackEnd/UnitTest/InvoiceTracker.UnitTests.csproj" />
   </Folder>
   <Project Path="Backend/InvoiceTracker.Api/InvoiceTracker.Api/InvoiceTracker.Api.csproj" />
   <Project Path="Backend/InvoiceTracker.Application/InvoiceTracker.Application.csproj" />

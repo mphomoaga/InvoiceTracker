@@ -1,0 +1,47 @@
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">▤</span><span>InvoiceTracker</span></div>
+  <nav class="nav"><a class="active" routerLink="/invoices">Invoices</a></nav>
+  <div class="user"><span>Invoice user</span><span class="avatar">IU</span><button class="logout-button" type="button" (click)="logout()">Sign out</button></div>
+</header>
+
+<main class="shell">
+  <div class="breadcrumb">Dashboard / <strong>Invoice Management</strong></div>
+  <section class="page-head">
+    <div><h1>Invoice Management</h1><p>Create, manage, and track customer invoices from one workspace.</p></div>
+    <button class="btn btn-primary" type="button" (click)="toggleCreate()"><span class="button-icon">＋</span>Create invoice</button>
+  </section>
+
+  <section class="stats" aria-label="Invoice summary">
+    <article class="stat"><div><div class="stat-label">Total invoices</div><div class="stat-value">{{ totalCount }}</div></div><div class="stat-icon">▤</div></article>
+    <article class="stat"><div><div class="stat-label">Current page total</div><div class="stat-value">{{ totalAmount | currency:'ZAR':'symbol-narrow':'1.0-0' }}</div></div><div class="stat-icon">✓</div></article>
+    <article class="stat"><div><div class="stat-label">Page</div><div class="stat-value">{{ pageNumber }} / {{ totalPages }}</div></div><div class="stat-icon">◷</div></article>
+    <article class="stat"><div><div class="stat-label">Secure access</div><div class="stat-value">User</div></div><div class="stat-icon">✓</div></article>
+  </section>
+
+  <section class="panel" *ngIf="showCreateForm">
+    <div class="panel-head"><div><h2>Create invoice</h2><p>Add the core invoice details.</p></div><button class="btn btn-light" type="button" (click)="toggleCreate()">Cancel</button></div>
+    <form class="invoice-form" [formGroup]="form" (ngSubmit)="createInvoice()">
+      <label>Person ID<input type="number" formControlName="personId"></label>
+      <label>Reference<input type="text" formControlName="reference" placeholder="INV-1050"></label>
+      <label>Invoice date<input type="date" formControlName="invoiceDate"></label>
+      <label>Due date<input type="date" formControlName="invoiceDueDate"></label>
+      <label>Status ID<input type="number" formControlName="invoiceStatusId"></label>
+      <label>Amount<input type="number" step="0.01" formControlName="invoiceAmount"></label>
+      <div class="form-actions"><button class="btn btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Saving…' : 'Save invoice' }}</button></div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><h2>Recent invoices</h2><p>Latest active billing activity</p></div><div class="toolbar"><label class="search"><span>⌕</span><input type="search" [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}" (keyup.enter)="search()" placeholder="Search reference"></label><button class="btn btn-light" type="button" (click)="search()">Search</button></div></div>
+    <div class="alert alert-error panel-alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+    <div class="table-wrap" *ngIf="!loading; else loadingTemplate">
+      <table><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>
+        <tr *ngFor="let invoice of invoices"><td><strong>{{ invoice.reference }}</strong></td><td>{{ invoice.personName || ('Person #' + invoice.personId) }}</td><td>{{ invoice.invoiceDate | date:'mediumDate' }}</td><td>{{ invoice.invoiceAmount | currency:'ZAR':'symbol-narrow':'1.2-2' }}</td><td><span class="status" [class.paid]="invoice.status?.toLowerCase() === 'paid'" [class.pending]="invoice.status?.toLowerCase() !== 'paid'">{{ invoice.status || 'Active' }}</span></td><td><button class="icon-button" type="button" (click)="remove(invoice)" aria-label="Delete invoice">×</button></td></tr>
+        <tr *ngIf="invoices.length === 0"><td colspan="6" class="empty">No invoices found.</td></tr>
+      </tbody></table>
+    </div>
+    <ng-template #loadingTemplate><div class="loading">Loading invoices…</div></ng-template>
+    <div class="pagination"><span>Showing page {{ pageNumber }} of {{ totalPages }}</span><div><button class="btn btn-light" type="button" (click)="previousPage()" [disabled]="pageNumber === 1">Previous</button><button class="btn btn-light" type="button" (click)="nextPage()" [disabled]="pageNumber >= totalPages">Next</button></div></div>
+  </section>
+</main>
+<footer class="footer">© 2026 InvoiceTracker. Clean billing, clear cash flow.</footer>

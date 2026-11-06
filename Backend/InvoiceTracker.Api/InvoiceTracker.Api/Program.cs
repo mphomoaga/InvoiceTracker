@@ -21,6 +21,10 @@ public partial class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+        builder.Services.AddCors(options => options.AddPolicy("Frontend", policy =>
+            policy.WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod()));
 
         var jwtKey = builder.Configuration["Jwt:Key"]; ;
         var jwtIssuer = builder.Configuration["Jwt:Issuer"];
@@ -63,6 +67,7 @@ public partial class Program
 
         app.UseHttpsRedirection();
         app.UseSerilogRequestLogging();
+        app.UseCors("Frontend");
 
         app.UseAuthentication();
         app.UseAuthorization();
