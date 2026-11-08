@@ -20,6 +20,13 @@ builder.Services.AddInfrastructureDependency(
     ?? throw new InvalidOperationException("The InvoiceTrackerDatabase connection string is missing."));
 
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("InvoiceTrackerWebUi", policy =>
+        policy.WithOrigins("http://localhost:4200", "http://localhost:8080")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -70,6 +77,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("InvoiceTrackerWebUi");
 
 app.UseExceptionHandler();
 app.UseAuthentication();
