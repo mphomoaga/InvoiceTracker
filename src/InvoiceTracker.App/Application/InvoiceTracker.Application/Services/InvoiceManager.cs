@@ -116,7 +116,11 @@ namespace InvoiceTracker.Application.Services
 
         public Task<bool> UpdateInvoiceStatus(int invoiceId, InvoiceStatusEnum newStatus, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return _invoiceRepository.UpdateInvoiceStatus(
+                invoiceId,
+                newStatus,
+                "system",
+                cancellationToken);
         }
 
         private static Invoice MapToInvoice(CreateInvoiceRequest request)
@@ -132,7 +136,7 @@ namespace InvoiceTracker.Application.Services
                 InvoiceStatusId = (int)request.InvoiceStatusEnum,
                 InvoiceAmount = request.InvoiceAmount,
                 CreatedBy = request.CreatedBy,
-                LineItems = request.LineItems
+                LineItems = (request.LineItems ?? [])
                     .Select(item =>
                     {
                         return new Domain.Models.InvoiceLineItem(0, item.Reference, item.Amount);
