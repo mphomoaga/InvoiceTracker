@@ -22,10 +22,12 @@ builder.Services.AddInfrastructureDependency(
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("InvoiceTrackerWebUi", policy =>
-        policy.WithOrigins("http://localhost:4200", "http://localhost:8080")
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()   // Allows requests from any domain
+              .AllowAnyMethod()   // Allows all HTTP methods (GET, POST, PUT, DELETE, etc.)
+              .AllowAnyHeader();  // Allows all request headers
+    });
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
