@@ -11,6 +11,7 @@ namespace InvoiceTracker.Application.Interfaces.Services
         Task<PagedResult<Invoice>> GetPaged(
             int pageNumber,
             int pageSize,
+            string? searchTerm,
             CancellationToken cancellationToken);
 
         Task<Invoice> AddNewInvoice(
@@ -30,7 +31,8 @@ namespace InvoiceTracker.Application.Interfaces.Services
 
         Task<bool> EmailInvoice(
          int invoiceId,
-         int personId,
+         string recipientEmail,
+         string createdBy,
         CancellationToken cancellationToken);
 
         Task<byte[]> GenerateInvoiceToDocument(

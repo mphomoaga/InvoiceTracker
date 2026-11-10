@@ -1,0 +1,99 @@
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">▤</span><span>InvoiceTracker</span></div>
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+    <a routerLink="/invoice" routerLinkActive="active">Invoices</a>
+    <a routerLink="/customers" routerLinkActive="active">Customers</a>
+    <a routerLink="/notifications" routerLinkActive="active">Notification</a>
+  </nav>
+  <div class="user">
+    <span>{{ user?.email }}</span>
+    <span class="avatar">{{ (user?.email || 'IT').slice(0, 2).toUpperCase() }}</span>
+    <button class="logout" type="button" (click)="logout()">Sign out</button>
+  </div>
+</header>
+
+<main class="shell">
+  <div class="breadcrumb">Dashboard / <strong>Customers</strong></div>
+
+  <section class="page-head">
+    <div>
+      <h1>Customers</h1>
+      <p>Search, add, and manage the people associated with your invoices.</p>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="showCreate = !showCreate">
+      {{ showCreate ? '× Close' : '＋ Add customer' }}
+    </button>
+  </section>
+
+  <div class="alert success" *ngIf="message">{{ message }}</div>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section class="panel create-panel" *ngIf="showCreate">
+    <div class="panel-head">
+      <div><h2>Add customer</h2><p>Enter the customer's contact and identification details.</p></div>
+    </div>
+    <form class="customer-form" [formGroup]="personForm" (ngSubmit)="addPerson()">
+      <label>Title<input formControlName="title" placeholder="Ms, Mr, Dr"></label>
+      <label>Initials<input formControlName="intials" maxlength="20"></label>
+      <label>Full names<input formControlName="fullNames" required autocomplete="given-name"></label>
+      <label>Surname<input formControlName="surname" required autocomplete="family-name"></label>
+      <label>ID number<input formControlName="idNumber"></label>
+      <label>Passport number<input formControlName="passportNumber"></label>
+      <div class="form-actions">
+        <button class="btn btn-light" type="button" (click)="showCreate = false">Cancel</button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving">
+          {{ saving ? 'Saving…' : 'Save customer' }}
+        </button>
+      </div>
+      <span class="field-error" *ngIf="personForm.controls.fullNames.touched && personForm.controls.fullNames.invalid">Full names are required.</span>
+      <span class="field-error" *ngIf="personForm.controls.surname.touched && personForm.controls.surname.invalid">Surname is required.</span>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h2>Customer directory</h2><p>{{ totalCount }} active customer{{ totalCount === 1 ? '' : 's' }}</p></div>
+      <form class="toolbar" (ngSubmit)="searchPeople()">
+        <input
+          class="search-input"
+          type="search"
+          name="searchTerm"
+          [(ngModel)]="searchTerm"
+          placeholder="Search name, ID, or passport">
+        <button class="btn btn-light" type="submit" [disabled]="loading">Search</button>
+        <button class="btn btn-light" type="button" (click)="clearSearch()" [disabled]="loading || !searchTerm">Clear</button>
+      </form>
+    </div>
+
+    <div class="table-wrap" *ngIf="!loading; else loadingTemplate">
+      <table>
+        <thead>
+          <tr><th>Customer</th><th>ID / Passport</th><th>Created</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let person of people">
+            <td><strong>{{ person.fullNames }} {{ person.surname }}</strong><small>{{ person.title }} {{ person.intials }}</small></td>
+            <td>{{ person.idNumber || person.passportNumber || '—' }}</td>
+            <td>{{ person.createdDate | date:'mediumDate' }}</td>
+            <td><span class="status active">Active</span></td>
+            <td><button class="table-action deactivate-action" type="button" [disabled]="deactivatingId === person.personId" (click)="deactivate(person)">{{ deactivatingId === person.personId ? 'Deactivating…' : 'Deactivate' }}</button></td>
+          </tr>
+          <tr *ngIf="people.length === 0"><td colspan="5" class="empty">No customers found. Try another search or add a customer.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #loadingTemplate><div class="loading">Loading customers…</div></ng-template>
+
+    <div class="pagination" *ngIf="totalCount > 0">
+      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+      <div>
+        <button class="btn btn-light" type="button" (click)="previousPage()" [disabled]="loading || pageNumber <= 1">Previous</button>
+        <button class="btn btn-light" type="button" (click)="nextPage()" [disabled]="loading || pageNumber >= totalPages">Next</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">© 2026 InvoiceTracker. Clean billing, clear cash flow.</footer>

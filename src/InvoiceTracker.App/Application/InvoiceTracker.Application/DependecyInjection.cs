@@ -10,6 +10,8 @@ namespace InvoiceTracker.Application
         {
             services.AddScoped<IAuthService, AuthManager>();
             services.AddScoped<IInvoiceService, InvoiceManager>();
+            services.AddScoped<INotificationService, NotificationManager>();
+            services.AddScoped<IPersonManager, PersonService>();
 
             return services;
         }

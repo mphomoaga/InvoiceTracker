@@ -16,33 +16,55 @@ namespace InvoiceTracker.Application.Services
         private readonly IEmailService _emailService;
         private readonly IPdfGenerator _pdfGenerator;
         private readonly IEmailTemplateRepository _emailTemplateRepository;
+        private readonly IPersonRepository _personRepository;
 
         public InvoiceManager(IInvoiceRepository invoiceRepository,
                                 IEmailService emailService,
                                 IPdfGenerator pdfGenerator,
-                                IEmailTemplateRepository emailTemplateRepository)
+                                IEmailTemplateRepository emailTemplateRepository,
+                                IPersonRepository personRepository)
         {
             _invoiceRepository = invoiceRepository;
             _emailService = emailService;
             _pdfGenerator = pdfGenerator;
             _emailTemplateRepository = emailTemplateRepository;
+            _personRepository = personRepository;
         }
 
         public async Task<Invoice> AddNewInvoice(CreateInvoiceRequest request, CancellationToken cancellationToken)
         {
             var invoice = MapToInvoice(request);
 
+            var client = await _personRepository.GetClientById(request.PersonId, cancellationToken);
+
+            if (client is null)
+            {
+                throw new ArgumentException($"Client with ID {request.PersonId} does not exist.");
+            }
+
+            invoice.PersonId = client.PersonId;
+            invoice.PersonFullName = client.FullNames;
             invoice = await _invoiceRepository.AddInvoice(invoice, cancellationToken);
             return invoice;
         }
 
-        public async Task<bool> EmailInvoice(int invoiceId, int personId, CancellationToken cancellationToken)
+        public async Task<bool> EmailInvoice(
+            int invoiceId,
+            string recipientEmail,
+            string createdBy,
+            CancellationToken cancellationToken)
         {
             var invoice = await _invoiceRepository.GetById(invoiceId, cancellationToken);
+            if (invoice is null)
+            {
+                throw new ArgumentException($"Invoice with ID {invoiceId} does not exist.");
+            }
+
             var pdf = await GenerateInvoiceToDocument(invoiceId, cancellationToken);
-
-
-            //TODO: Cleaup the simulation codebase
+            if (pdf is null)
+            {
+                throw new InvalidOperationException("Could not generate the invoice document.");
+            }
 
             var attachment = new List<EmailAttachment>();
 
@@ -53,17 +75,16 @@ namespace InvoiceTracker.Application.Services
                 FileName = $"Invoice_{invoice.Reference}.pdf"
             });
 
-            _ = _emailService.SendEmail(
-                    "mpho.moaga@outlook.com",
+            return await _emailService.SendEmail(
+                    recipientEmail,
                     "Invoice Statement",
                     "InvoiceStatement",
                     invoice.InvoiceId,
                     "Please find attached your invoice statement.",
                     attachment,
-                    "system"
+                    createdBy,
+                    cancellationToken
                 );
-
-            return true;
         }
 
         public async Task<byte[]> GenerateInvoiceToDocument(int invoiceId, CancellationToken cancellationToken)
@@ -82,7 +103,9 @@ namespace InvoiceTracker.Application.Services
 
             var invoiceStatus = (InvoiceStatusEnum)Invoice.InvoiceStatusId;
 
-            return  await FormatInvoicePDFDocument(Invoice, template, invoiceStatus);
+            var invoiceDoc = await FormatInvoiceDocument(Invoice, template, invoiceStatus);
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(invoiceDoc);
+            return bytes;
         }
 
         public async Task<Invoice?> GetById(int invoiceId, CancellationToken cancellationToken)
@@ -91,10 +114,15 @@ namespace InvoiceTracker.Application.Services
             return Invoice ?? null;
         }
 
-        public async Task<PagedResult<Invoice>> GetPaged(int pageNumber, int pageSize, CancellationToken cancellationToken)
+        public async Task<PagedResult<Invoice>> GetPaged(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            CancellationToken cancellationToken)
         {
             return await _invoiceRepository.GetPaged(pageNumber,
                                                     pageSize,
+                                                    searchTerm,
                                                     cancellationToken);
         }
 
@@ -146,7 +174,7 @@ namespace InvoiceTracker.Application.Services
             };
         }
 
-        private async Task<byte[]> FormatInvoicePDFDocument(Invoice Invoice, string template, InvoiceStatusEnum invoiceStatus)
+        private async Task<string> FormatInvoiceDocument(Invoice Invoice, string template, InvoiceStatusEnum invoiceStatus)
         {
             var InvoiceDoc = template.Replace("[InvoiceNumber]", Invoice.Reference)
                                         .Replace(" [InvoiceStatus]", invoiceStatus.GetDisplayDescription())
@@ -156,10 +184,10 @@ namespace InvoiceTracker.Application.Services
                                         .Replace("[Reference]", Invoice.Reference)
                                         .Replace("[Subtotal]", Invoice.InvoiceAmount.ToString("C2",
                                                                 CultureInfo.GetCultureInfo("en-ZA")));
+            //TODO: Fix the HTML to PDF converter. The current implementation is not working as expected.
+            // var pdf = await _pdfGenerator.GeneratePdfFromHTML(InvoiceDoc);
 
-            var pdf = await _pdfGenerator.GeneratePdfFromHTML(InvoiceDoc);
-
-            return pdf;
+            return InvoiceDoc;
         }
 
 

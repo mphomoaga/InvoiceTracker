@@ -1,0 +1,86 @@
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">▤</span><span>InvoiceTracker</span></div>
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+    <a routerLink="/invoice" routerLinkActive="active">Invoices</a>
+    <a routerLink="/customers" routerLinkActive="active">Customers</a>
+    <a routerLink="/notifications" routerLinkActive="active">Notification</a>
+  </nav>
+  <div class="user">
+    <span>{{ user?.email }}</span>
+    <span class="avatar">{{ (user?.email || 'IT').slice(0, 2).toUpperCase() }}</span>
+    <button class="logout" type="button" (click)="logout()">Sign out</button>
+  </div>
+</header>
+
+<main class="shell">
+  <div class="breadcrumb">Dashboard / <strong>Notification</strong></div>
+  <section class="page-head">
+    <div><h1>Notification</h1><p>Search email history, view message contents, and resend a notification.</p></div>
+  </section>
+
+  <div class="alert success" *ngIf="message">{{ message }}</div>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h2>Email history</h2><p>{{ totalCount }} email record{{ totalCount === 1 ? '' : 's' }}</p></div>
+      <form class="toolbar" (ngSubmit)="searchEmails()">
+        <input class="search-input" type="search" name="searchTerm" [(ngModel)]="searchTerm" placeholder="Search recipient, subject, or body">
+        <button class="btn btn-light" type="submit" [disabled]="loading">Search</button>
+        <button class="btn btn-light" type="button" (click)="clearSearch()" [disabled]="loading || !searchTerm">Clear</button>
+      </form>
+    </div>
+
+    <div class="table-wrap" *ngIf="!loading; else loadingTemplate">
+      <table>
+        <thead><tr><th>Sent</th><th>Recipient</th><th>Subject</th><th>Reference</th><th>Result</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let email of emails">
+            <td>{{ email.sentDate | date:'medium' }}</td>
+            <td><strong>{{ email.to }}</strong><small *ngIf="email.cc">CC: {{ email.cc }}</small></td>
+            <td>{{ email.subject }}</td>
+            <td>{{ email.itemType }} #{{ email.itemTypeRef }}</td>
+            <td><span class="email-status" [ngClass]="sentStatusClass(email.isSent)">{{ email.isSent ? 'Sent' : 'Failed' }}</span><small *ngIf="email.hasAttachments">Attachment</small></td>
+            <td class="actions">
+              <button class="table-action" type="button" (click)="viewEmail(email)">View email</button>
+              <button class="table-action resend-action" type="button" [disabled]="resendingId === email.emailAuditId" (click)="resend(email)">{{ resendingId === email.emailAuditId ? 'Resending…' : 'Resend' }}</button>
+            </td>
+          </tr>
+          <tr *ngIf="emails.length === 0"><td colspan="6" class="empty">No email records found. Try another search.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #loadingTemplate><div class="loading">Loading notifications…</div></ng-template>
+    <div class="pagination" *ngIf="totalCount > 0">
+      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+      <div>
+        <button class="btn btn-light" type="button" (click)="previousPage()" [disabled]="loading || pageNumber <= 1">Previous</button>
+        <button class="btn btn-light" type="button" (click)="nextPage()" [disabled]="loading || pageNumber >= totalPages">Next</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="dialog-backdrop" *ngIf="dialogOpen" (click)="closeDialog()">
+  <section class="email-dialog" role="dialog" aria-modal="true" aria-labelledby="email-dialog-title" (click)="$event.stopPropagation()">
+    <header class="dialog-header">
+      <div><span class="dialog-eyebrow">Email content</span><h2 id="email-dialog-title">{{ dialogSubject }}</h2></div>
+      <button class="dialog-close" type="button" aria-label="Close email dialog" (click)="closeDialog()">×</button>
+    </header>
+    <div class="dialog-meta" *ngIf="selectedEmail">
+      <span><strong>To:</strong> {{ selectedEmail.to }}</span>
+      <span *ngIf="selectedEmail.cc"><strong>CC:</strong> {{ selectedEmail.cc }}</span>
+      <span>{{ selectedEmail.sentDate | date:'medium' }}</span>
+    </div>
+    <div class="dialog-content">
+      <div class="loading" *ngIf="dialogLoading">Loading email body…</div>
+      <div class="alert error" *ngIf="dialogError">{{ dialogError }}</div>
+      <iframe *ngIf="selectedEmail" class="email-frame" [srcdoc]="selectedEmail.body" sandbox="allow-popups" title="Email body"></iframe>
+    </div>
+    <footer class="dialog-footer"><button class="btn btn-light" type="button" (click)="closeDialog()">Close</button></footer>
+  </section>
+</div>
+
+<footer class="footer">© 2026 InvoiceTracker. Clean billing, clear cash flow.</footer>

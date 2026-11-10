@@ -1,0 +1,182 @@
+.actions {
+  white-space: nowrap;
+}
+
+.invoice-create-form {
+  display: grid;
+  gap: 20px;
+  padding: 18px 22px 22px;
+}
+
+.invoice-meta,
+.line-item-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.invoice-meta label,
+.line-item-row label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.invoice-meta input,
+.line-item-row input {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fafbfe;
+}
+
+.selected-customer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin: 0 22px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fafbfe;
+}
+
+.selected-customer div {
+  display: grid;
+  gap: 4px;
+}
+
+.selected-customer span,
+.selected-customer small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.line-items-head,
+.invoice-total,
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.line-items-head h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.invoice-total {
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.invoice-total strong {
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.remove-line {
+  align-self: end;
+  padding-bottom: 12px;
+  color: var(--danger);
+}
+
+.email-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+}
+
+.email-form label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.email-form input {
+  min-width: 230px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fafbfe;
+}
+
+.actions select {
+  max-width: 130px;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+}
+
+.deactivate-action {
+  color: var(--danger);
+}
+
+.status.partially-paid,
+.status.refunded,
+.status.written-off {
+  color: #59617a;
+  background: #eef0f5;
+}
+
+.status.overdue {
+  color: #c84242;
+  background: #feecec;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pagination > div {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 620px) {
+  .invoice-meta,
+  .line-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-customer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .email-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination > div {
+    justify-content: space-between;
+  }
+}

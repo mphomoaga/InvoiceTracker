@@ -1,6 +1,7 @@
 using InvoiceTracker.Application;
 using InvoiceTracker.Infrastructure;
 using InvoiceTracker.Infrastructure.Persistence;
+using InvoiceTracker.Infrastructure.Persistence.Configuration;
 using InvoiceTracker.WebApi.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,12 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
-builder.Services.AddApplicationDependency();
+
 builder.Services.AddInfrastructureDependency(
-    builder.Configuration.GetConnectionString("InvoiceTrackerDatabase")
-    ?? throw new InvalidOperationException("The InvoiceTrackerDatabase connection string is missing."));
+    builder.Configuration.GetConnectionString("InvoiceTrackerDatabase"));
+builder.Services.AddApplicationDependency();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
@@ -29,8 +32,6 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();  // Allows all request headers
     });
 });
-builder.Services.AddProblemDetails();
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("Jwt:Key is not configured.");
@@ -80,7 +81,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("InvoiceTrackerWebUi");
+app.UseCors("AllowAll");
 
 app.UseExceptionHandler();
 app.UseAuthentication();
@@ -95,14 +96,7 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        var dbContext = scope.ServiceProvider
-            .GetRequiredService<InvoiceTrackerDbContext>();
-
-        logger.LogInformation("Applying database migrations...");
-
-        dbContext.Database.Migrate();
-
-        logger.LogInformation("Database migrations completed.");
+        await app.Services.ApplyDatabaseMigrationsAsync();
     }
     catch (Exception ex)
     {

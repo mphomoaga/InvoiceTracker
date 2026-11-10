@@ -14,7 +14,7 @@ namespace InvoiceTracker.Domain.Entities
         [MaxLength(100)]
         public string Description { get; set; } = null!;
 
-        public bool IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         [MaxLength(100)]
         public string CreatedBy { get; set; } = null!;

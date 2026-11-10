@@ -1,8 +1,7 @@
-﻿using DinkToPdf;
-using DinkToPdf.Contracts;
-using InvoiceTracker.Application.Interfaces.Repositories;
+﻿using InvoiceTracker.Application.Interfaces.Repositories;
 using InvoiceTracker.Application.Interfaces.Services;
 using InvoiceTracker.Domain.Interfaces;
+using InvoiceTracker.Infrastructure.Email;
 using InvoiceTracker.Infrastructure.PDFGenerator;
 using InvoiceTracker.Infrastructure.Persistence;
 using InvoiceTracker.Infrastructure.Repository;
@@ -23,17 +22,18 @@ namespace InvoiceTracker.Infrastructure
 
             services.AddMemoryCache();
 
-            //Repositories
+            //// Repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ISettingRepository, SettingRepository>();
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
+            services.AddScoped<IEmailAuditRepository, EmailAuditRepository>();
             services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IPersonRepository, PersonRepository>();
 
             //PDF Generator
-
-            services.AddSingleton<IConverter>(new SynchronizedConverter(new PdfTools()));
             services.AddScoped<IPdfGenerator, PdfGenerator>();
 
             return services;

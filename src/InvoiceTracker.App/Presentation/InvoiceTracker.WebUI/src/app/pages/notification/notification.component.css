@@ -1,0 +1,163 @@
+.actions {
+  white-space: nowrap;
+}
+
+.table-wrap td small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.email-status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.sent-status {
+  color: #148866;
+  background: #e7f8f2;
+}
+
+.failed-status {
+  color: #c84242;
+  background: #feecec;
+}
+
+.resend-action {
+  color: #a86d08;
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.pagination > div {
+  display: flex;
+  gap: 8px;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(26, 29, 48, .58);
+}
+
+.email-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(900px, 96vw);
+  max-height: min(820px, 92vh);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 24px 70px rgba(20, 23, 45, .28);
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dialog-header h2 {
+  margin: 5px 0 0;
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.dialog-eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+
+.dialog-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--muted);
+  background: #f2f3f8;
+  font-size: 24px;
+}
+
+.dialog-close:hover {
+  color: var(--ink);
+  background: #e9ebf2;
+}
+
+.dialog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dialog-content {
+  min-height: 180px;
+  overflow: auto;
+  padding: 16px 20px;
+}
+
+.email-frame {
+  display: block;
+  width: 100%;
+  height: min(55vh, 500px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 760px) {
+  .dialog-backdrop {
+    padding: 10px;
+  }
+
+  .dialog-header,
+  .dialog-meta {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
+@media (max-width: 620px) {
+  .pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pagination > div {
+    justify-content: space-between;
+  }
+}

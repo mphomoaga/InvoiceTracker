@@ -10,10 +10,7 @@ namespace InvoiceTracker.Infrastructure.Repository
     {
         private readonly InvoiceTrackerDbContext _context;
 
-        public InvoiceRepository(InvoiceTrackerDbContext context)
-        {
-            _context = context;
-        }
+        public InvoiceRepository(InvoiceTrackerDbContext context) => _context = context;
 
         public async Task<Invoice> AddInvoice(Invoice request, CancellationToken cancellationToken)
         {
@@ -60,11 +57,24 @@ namespace InvoiceTracker.Infrastructure.Repository
             return invoiceEntity is null ? null : MapInvoiceEntityToModel(invoiceEntity);
         }
 
-        public async Task<PagedResult<Invoice>> GetPaged(int pageNumber, int pageSize, CancellationToken cancellationToken)
+        public async Task<PagedResult<Invoice>> GetPaged(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            CancellationToken cancellationToken)
         {
             var invoices = _context.Invoices
                 .AsNoTracking()
                 .Where(invoice => invoice.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var search = searchTerm.Trim();
+                invoices = invoices.Where(invoice =>
+                    invoice.Reference.Contains(search)
+                    || invoice.Person.FullNames.Contains(search)
+                    || invoice.Person.Surname.Contains(search));
+            }
 
             var totalCount = await invoices.CountAsync(cancellationToken);
             var invoiceEntities = await invoices
@@ -136,6 +146,7 @@ namespace InvoiceTracker.Infrastructure.Repository
         public async Task<bool> UpdateInvoiceStatus(int invoiceId, InvoiceStatusEnum invoiceStatusEnum, string modifiedBy, CancellationToken cancellationToken)
         {
             var invoiceEntity = await _context.Invoices
+                .Include(i => i.InvoiceStatus)
                 .FirstOrDefaultAsync(
                     invoice => invoice.InvoiceId == invoiceId && invoice.IsActive,
                     cancellationToken);
@@ -165,7 +176,7 @@ namespace InvoiceTracker.Infrastructure.Repository
                 InvoiceStatusId = invoice.InvoiceStatusId,
                 InvoiceAmount = invoice.InvoiceAmount,
                 CreatedBy = invoice.CreatedBy,
-                PersonName = invoice.Person is null
+                PersonFullName = invoice.Person is null
                     ? null
                     : $"{invoice.Person.FullNames} {invoice.Person.Surname}".Trim(),
                 LineItems = invoice.InvoiceLineItems

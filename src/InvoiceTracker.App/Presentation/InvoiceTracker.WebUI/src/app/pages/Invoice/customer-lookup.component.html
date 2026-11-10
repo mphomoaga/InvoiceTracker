@@ -1,0 +1,21 @@
+<section class="customer-lookup">
+  <form class="toolbar" (ngSubmit)="searchCustomers()">
+    <input class="search-input" type="search" name="customerSearch" [(ngModel)]="searchTerm" placeholder="Search customer name, ID, or passport">
+    <button class="btn btn-light" type="submit" [disabled]="loading">Find customer</button>
+  </form>
+  <div class="lookup-error" *ngIf="error">{{ error }}</div>
+  <div class="lookup-loading" *ngIf="loading">Searching customers…</div>
+  <div class="customer-results" *ngIf="!loading && people.length">
+    <button class="customer-result" type="button" *ngFor="let person of people" (click)="selectCustomer(person)">
+      <strong>{{ person.fullNames }} {{ person.surname }}</strong>
+      <span>{{ person.idNumber || person.passportNumber || ('Customer #' + person.personId) }}</span>
+      <span class="choose-label">Select</span>
+    </button>
+    <div class="lookup-pagination" *ngIf="totalPages > 1">
+      <button class="table-action" type="button" (click)="previousPage()" [disabled]="loading || pageNumber <= 1">Previous</button>
+      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+      <button class="table-action" type="button" (click)="nextPage()" [disabled]="loading || pageNumber >= totalPages">Next</button>
+    </div>
+  </div>
+  <p class="lookup-empty" *ngIf="!loading && searchTerm && people.length === 0 && !error">No active customers match that search.</p>
+</section>

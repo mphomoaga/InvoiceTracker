@@ -21,7 +21,7 @@ namespace InvoiceTracker.Infrastructure.Email
 
 
         public async Task<bool> SendEmail(string to, string subject, string itemType,
-    int itemTypeRef, string body, IEnumerable<EmailAttachment> attachments, string createdBy, CancellationToken cancellationToken = default)
+    int itemTypeRef, string body, IEnumerable<EmailAttachment> attachments, string createdBy, CancellationToken cancellationToken = default, string? cc = null)
         {
             try
             {
@@ -32,6 +32,7 @@ namespace InvoiceTracker.Infrastructure.Email
                     ItemTypeRef = itemTypeRef,
                     From = from,
                     To = to,
+                    CC = cc,
                     Subject = subject,
                     Body = body,
                     HasAttachments = attachments?.Any() ?? false,
@@ -56,6 +57,7 @@ namespace InvoiceTracker.Infrastructure.Email
                     ItemTypeRef = itemTypeRef,
                     From = from,
                     To = to,
+                    CC = cc,
                     Subject = subject,
                     Body = body,
                     HasAttachments = attachments?.Any() ?? false,

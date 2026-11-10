@@ -1,0 +1,114 @@
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">▤</span><span>InvoiceTracker</span></div>
+  <nav class="nav">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+    <a routerLink="/invoice" routerLinkActive="active">Invoices</a>
+    <a routerLink="/customers" routerLinkActive="active">Customers</a>
+    <a routerLink="/notifications" routerLinkActive="active">Notification</a>
+  </nav>
+  <div class="user">
+    <span>{{ user?.email }}</span>
+    <span class="avatar">{{ (user?.email || 'IT').slice(0, 2).toUpperCase() }}</span>
+    <button class="logout" type="button" (click)="logout()">Sign out</button>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="page-head">
+    <div>
+      <h1>Invoices</h1>
+      <p>Search, review, and manage invoices for your customers.</p>
+    </div>
+    <button class="btn btn-primary" type="button" (click)="openCreate()">{{ showCreate ? '× Close' : '＋ Create invoice' }}</button>
+  </section>
+
+  <div class="alert success" *ngIf="message">{{ message }}</div>
+  <div class="alert error" *ngIf="error">{{ error }}</div>
+
+  <section class="panel create-panel" *ngIf="showCreate">
+    <div class="panel-head">
+      <div><h2>Create invoice</h2><p>Choose an active customer, then enter invoice details and line items.</p></div>
+    </div>
+    <app-customer-lookup (customerFound)="selectCustomer($event)"></app-customer-lookup>
+    <div class="selected-customer" *ngIf="selectedCustomer">
+      <div><span>Invoice to</span><strong>{{ selectedCustomer.fullNames }} {{ selectedCustomer.surname }}</strong><small>Customer #{{ selectedCustomer.personId }}</small></div>
+      <button class="table-action" type="button" (click)="changeCustomer()">Change customer</button>
+    </div>
+    <form class="invoice-create-form" [formGroup]="invoiceForm" (ngSubmit)="createInvoice()">
+      <div class="invoice-meta">
+        <label>Invoice number<input formControlName="reference" required></label>
+        <label>Invoice date<input type="date" formControlName="invoiceDate" required></label>
+        <label>Due date<input type="date" formControlName="invoiceDueDate" required></label>
+      </div>
+      <div class="line-items-head"><h3>Items</h3><button class="btn btn-light" type="button" (click)="addLineItem()">＋ Add line</button></div>
+      <div class="line-item-row" *ngFor="let item of lineItems; let i = index">
+        <label>Description<input name="description-{{ i }}" [(ngModel)]="item.reference" [ngModelOptions]="{ standalone: true }" placeholder="Product or service" required></label>
+        <label>Amount (ZAR)<input name="amount-{{ i }}" type="number" min="0.01" step="0.01" [(ngModel)]="item.amount" [ngModelOptions]="{ standalone: true }" required></label>
+        <button class="table-action remove-line" type="button" (click)="removeLineItem(i)" [disabled]="lineItems.length === 1">Remove</button>
+      </div>
+      <span class="field-error" *ngIf="lineItemsError">{{ lineItemsError }}</span>
+      <div class="invoice-total"><span>Total due</span><strong>{{ invoiceTotal | currency:'ZAR':'symbol':'1.2-2' }}</strong></div>
+      <div class="form-actions">
+        <button class="btn btn-light" type="button" (click)="openCreate()" [disabled]="saving">Cancel</button>
+        <button class="btn btn-primary" type="submit" [disabled]="saving || !selectedCustomer">{{ saving ? 'Saving…' : 'Save invoice' }}</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel email-panel" *ngIf="emailingInvoiceId !== null">
+    <form class="email-form" (ngSubmit)="sendInvoice()">
+      <label for="recipientEmail">Recipient email address</label>
+      <input id="recipientEmail" type="email" name="recipientEmail" [(ngModel)]="recipientEmail" required email placeholder="client@example.com">
+      <button class="btn btn-light" type="button" (click)="cancelEmail()" [disabled]="sendingEmail">Cancel</button>
+      <button class="btn btn-primary" type="submit" [disabled]="sendingEmail || !recipientEmail.trim()">{{ sendingEmail ? 'Sending…' : 'Email invoice' }}</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div><h2>Invoice directory</h2><p>{{ totalCount }} active invoice{{ totalCount === 1 ? '' : 's' }}</p></div>
+      <form class="toolbar" (ngSubmit)="searchInvoices()">
+        <input class="search-input" type="search" name="searchTerm" [(ngModel)]="searchTerm" placeholder="Search invoice or customer">
+        <button class="btn btn-light" type="submit" [disabled]="loading">Search</button>
+        <button class="btn btn-light" type="button" (click)="clearSearch()" [disabled]="loading || !searchTerm">Clear</button>
+      </form>
+    </div>
+
+    <div class="table-wrap" *ngIf="!loading; else loadingTemplate">
+      <table>
+        <thead>
+          <tr><th>Invoice</th><th>Customer</th><th>Invoice date</th><th>Due date</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of invoices">
+            <td><strong>#{{ invoice.reference }}</strong></td>
+            <td>{{ invoice.personFullName || ('Customer #' + invoice.personId) }}</td>
+            <td>{{ invoice.invoiceDate | date:'mediumDate' }}</td>
+            <td>{{ invoice.invoiceDueDate | date:'mediumDate' }}</td>
+            <td>{{ invoice.invoiceAmount | currency:'ZAR':'symbol':'1.2-2' }}</td>
+            <td><span class="status" [ngClass]="statusClass(invoice.invoiceStatusId)">{{ statusName(invoice.invoiceStatusId) }}</span></td>
+            <td class="actions">
+              <select aria-label="Update invoice status" [ngModel]="invoice.invoiceStatusId" [ngModelOptions]="{ standalone: true }" (ngModelChange)="updateStatus(invoice, $event)" [disabled]="updatingStatusId === invoice.invoiceId || deactivatingId === invoice.invoiceId">
+                <option *ngFor="let status of statuses" [ngValue]="status.value">{{ status.label }}</option>
+              </select>
+              <button class="table-action" type="button" (click)="startEmail(invoice)">Email</button>
+              <button class="table-action deactivate-action" type="button" [disabled]="deactivatingId === invoice.invoiceId || updatingStatusId === invoice.invoiceId" (click)="deactivate(invoice)">{{ deactivatingId === invoice.invoiceId ? 'Deactivating…' : 'Deactivate' }}</button>
+            </td>
+          </tr>
+          <tr *ngIf="invoices.length === 0"><td colspan="7" class="empty">No invoices found. Try another search.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #loadingTemplate><div class="loading">Loading invoices…</div></ng-template>
+    <div class="pagination" *ngIf="totalCount > 0">
+      <span>Page {{ pageNumber }} of {{ totalPages }}</span>
+      <div>
+        <button class="btn btn-light" type="button" (click)="previousPage()" [disabled]="loading || pageNumber <= 1">Previous</button>
+        <button class="btn btn-light" type="button" (click)="nextPage()" [disabled]="loading || pageNumber >= totalPages">Next</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">© 2026 InvoiceTracker. Clean billing, clear cash flow.</footer>

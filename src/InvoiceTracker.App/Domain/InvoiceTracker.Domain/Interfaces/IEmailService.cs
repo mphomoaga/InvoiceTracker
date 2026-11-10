@@ -10,6 +10,8 @@ namespace InvoiceTracker.Domain.Interfaces
             int itemTypeRef,
             string body,
             IEnumerable<EmailAttachment> attachments,
-            string createdBy, CancellationToken cancellationToken = default);
+            string createdBy,
+            CancellationToken cancellationToken = default,
+            string? cc = null);
     }
 }

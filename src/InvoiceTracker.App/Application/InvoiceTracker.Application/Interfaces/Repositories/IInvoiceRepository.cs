@@ -12,6 +12,7 @@ namespace InvoiceTracker.Application.Interfaces.Repositories
         Task<PagedResult<Invoice>> GetPaged(
         int pageNumber,
         int pageSize,
+        string? searchTerm,
         CancellationToken cancellationToken);
 
         Task<Invoice> AddInvoice(

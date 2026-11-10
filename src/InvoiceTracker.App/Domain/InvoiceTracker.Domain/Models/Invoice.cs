@@ -18,7 +18,7 @@
 
         public string CreatedBy { get; set; }
 
-        public string? PersonName  { get; set; }
+        public string? PersonFullName  { get; set; }
 
         public List<InvoiceLineItem> LineItems  { get; set; }
     }

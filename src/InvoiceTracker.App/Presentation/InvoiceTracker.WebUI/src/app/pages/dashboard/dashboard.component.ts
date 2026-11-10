@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
-import { CreateInvoiceRequest, Invoice } from '../../core/models';
-import { InvoiceService } from '../../core/invoice.service';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { CreateInvoiceRequest, Invoice } from '../../core/models/models';
+import { InvoiceService } from '../../core/services/invoice.service';
 
 @Component({
-  selector: 'app-dashboard', standalone: true, imports: [CommonModule, FormsModule, ReactiveFormsModule], templateUrl: './dashboard.component.html'
+  selector: 'app-dashboard', standalone: true, imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, RouterLinkActive], templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
   private readonly invoicesApi = inject(InvoiceService);
@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
   }
   applySearch(): void {
     const query = this.search.toLowerCase().trim();
-    this.filteredInvoices = this.invoices.filter((invoice) => `${invoice.reference} ${invoice.personName ?? ''}`.toLowerCase().includes(query));
+    this.filteredInvoices = this.invoices.filter((invoice) => `${invoice.reference} ${invoice.personFullName ?? ''}`.toLowerCase().includes(query));
   }
   statusName(status: number): string {
     return ({ 1: 'Draft', 2: 'Pending', 3: 'Sent', 4: 'Viewed', 5: 'Partially paid', 6: 'Paid', 7: 'Overdue', 8: 'Cancelled' } as Record<number, string>)[status] || 'Unknown';

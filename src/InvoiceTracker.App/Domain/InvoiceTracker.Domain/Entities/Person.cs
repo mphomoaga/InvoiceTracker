@@ -6,6 +6,7 @@ using System.Text;
 
 namespace InvoiceTracker.Domain.Entities
 {
+    [Table("Person", Schema = "dbo")]
     public  class Person
     {
         [Key]

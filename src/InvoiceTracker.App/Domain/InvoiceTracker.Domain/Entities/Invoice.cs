@@ -1,9 +1,5 @@
-﻿using InvoiceTracker.Domain.Entities.DatabaseEnums;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace InvoiceTracker.Domain.Entities
 {
@@ -36,12 +32,12 @@ namespace InvoiceTracker.Domain.Entities
 
         public DateTime? ModifiedDate { get; set; }
 
-        [ForeignKey("InvoiceStatusId")]
-        public virtual InvoiceStatus InvoiceStatus { get; set; }
-
         public virtual ICollection<InvoiceLineItem> InvoiceLineItems { get; set; } = new List<InvoiceLineItem>();
 
         [ForeignKey("PersonId")]
         public virtual Person Person { get; set; } = null!;
+
+        [ForeignKey("InvoiceStatusId")]
+        public virtual InvoiceStatus InvoiceStatus { get; set; } = null!;
     }
 }

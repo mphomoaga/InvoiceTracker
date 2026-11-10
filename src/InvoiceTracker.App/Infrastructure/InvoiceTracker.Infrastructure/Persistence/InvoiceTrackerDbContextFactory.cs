@@ -10,16 +10,9 @@ public sealed class InvoiceTrackerDbContextFactory
     public InvoiceTrackerDbContext CreateDbContext(string[] args)
     {
         var configuration = BuildConfiguration();
-        var connectionString = configuration.GetConnectionString("InvoiceTrackerDatabase")
-            ?? Environment.GetEnvironmentVariable("INVOICE_TRACKER_CONNECTION_STRING");
+        var connectionString = configuration.GetConnectionString("InvoiceTrackerDatabase");
 
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException(
-                "The InvoiceTrackerDatabase connection string is missing. " +
-                "Set it in the Web API appsettings.json or INVOICE_TRACKER_CONNECTION_STRING.");
-        }
-
+     
         var options = new DbContextOptionsBuilder<InvoiceTrackerDbContext>()
             .UseSqlServer(connectionString)
             .Options;
@@ -44,8 +37,9 @@ public sealed class InvoiceTrackerDbContextFactory
         var candidates = new[]
         {
             currentDirectory,
-            Path.Combine(currentDirectory, "..", "..", "Presentation", "InvoiceTracker", "InvoiceTracker.WebApi"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "Presentation", "InvoiceTracker", "InvoiceTracker.WebApi")
+            Path.Combine(currentDirectory, "..", "Presentation", "InvoiceTracker.WebApi"),
+            Path.Combine(currentDirectory, "..", "..", "Presentation", "InvoiceTracker.WebApi"),
+            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "Presentation", "InvoiceTracker.WebApi")
         };
 
         var webApiDirectory = candidates

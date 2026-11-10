@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using System.Security.Claims;
 using InvoiceTracker.Application.DTOs;
 using InvoiceTracker.Application.Interfaces.Services;
 using InvoiceTracker.Application.Services;
@@ -29,14 +30,60 @@ namespace InvoiceTracker.WebApi.Controllers
         public async Task<ActionResult<PagedResult<Invoice>>> GetPaged(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 20,
+            [FromQuery] string? searchTerm = null,
             CancellationToken cancellationToken = default)
         {
             var invoices = await _invoiceService.GetPaged(
                 pageNumber,
                 pageSize,
+                searchTerm,
                 cancellationToken);
 
             return Ok(invoices);
+        }
+
+        [HttpDelete("{invoiceId:int}")]
+        public async Task<IActionResult> DeactivateInvoice(
+            int invoiceId,
+            CancellationToken cancellationToken = default)
+        {
+            var modifiedBy = User.FindFirst(ClaimTypes.Email)?.Value
+                ?? User.FindFirst("email")?.Value
+                ?? "web-ui";
+
+            var deactivated = await _invoiceService.RemoveInvoice(
+                invoiceId,
+                modifiedBy,
+                cancellationToken);
+
+            return deactivated ? NoContent() : NotFound();
+        }
+
+        [HttpPost("{invoiceId:int}/email")]
+        public async Task<IActionResult> EmailInvoice(
+            int invoiceId,
+            [FromBody] EmailInvoiceRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var createdBy = User.FindFirst(ClaimTypes.Email)?.Value
+                    ?? User.FindFirst("email")?.Value
+                    ?? "web-ui";
+
+                var sent = await _invoiceService.EmailInvoice(
+                    invoiceId,
+                    request.RecipientEmail,
+                    createdBy,
+                    cancellationToken);
+
+                return sent ? Ok() : BadRequest(new { message = "Could not email invoice." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while emailing invoice {InvoiceId}.", invoiceId);
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost]

@@ -1,6 +1,6 @@
 # InvoiceTracker
 
-InvoiceTracker is an enterprise-grade Invoice Management and Payment Tracking platform built using Clean Architecture, .NET 9 Web API, Angular, and Entity Framework Core.
+InvoiceTracker is an enterprise-grade Invoice Management and Payment Tracking platform built using Clean Architecture, .NET 10 Web API, Angular, and Entity Framework Core.
 
 ## Solution Architecture
 
@@ -37,21 +37,24 @@ InvoiceTracker/
 ## Technology Stack
 
 ### Backend
-- .NET 9 Web API
+- .NET 10 Web API
 - Entity Framework Core
 - SQL Server
 - Serilog
 
 ### Frontend
-- Angular 20+
-- TypeScript
-- Angular Material
-- RxJS
+-Node.js: LTS version 20.x or newer
+-Angular: version 20.3.x
+
+
+
+src/environments/environment.ts
+API base URL(IIS Express): https://localhost:44358/api
+
 
 ### deployment
 - Run Web Api on Docker or IIS Express
 - Node
-
 
 ## Getting Started
 ### Database Setup
@@ -61,10 +64,19 @@ InvoiceTracker/
 	Step 2: Execute the SQL scripts to create the necessary tables and constraints. Scripts can be found in the `src/InvoiceTracker.Database` folder.
 ### Backend
 ```bash
-cd src/InvoiceTracker/Presentation/InvoiceTracker.WebApi
+cd src/InvoiceTracker.App/Presentation/InvoiceTracker.WebApi
 dotnet restore
 dotnet build
 dotnet run
+```
+
+### Run the Web API with Docker
+
+Run these commands from the repository root. The Docker build context includes the API and its Application, Domain, and Infrastructure project references.
+
+```powershell
+docker build -f src/InvoiceTracker.App/Presentation/InvoiceTracker.WebApi/Dockerfile -t invoice-tracker-api src/InvoiceTracker.App
+docker run --rm --name invoice-tracker-api -p 44358:44358 -e "ConnectionStrings__InvoiceTrackerDatabase=Server=host.docker.internal,1433;Database=InvoiceTracker;User Id=YOUR_USER;Password=YOUR_PASSWORD;Encrypt=False;TrustServerCertificate=True" invoice-tracker-api
 ```
 
 ### WebApi: 
@@ -72,9 +84,21 @@ dotnet run
 
 ### Frontend
 ```bash
-cd	src/InvoiceTracker/Presentation/invoicetracker-web
-npm install
+open front-end folder: src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI/
+
+	-Change the Web Api port from the following File :src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI/environments/environment.ts
+	Minimum setup:
+
+	-Install Node.js LTS 20+
+	-Open a terminal in the Web UI project folder:
+	-src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI
+	-Run:
+	-npm install
+	-Start the app:
+	-npm start
+	-Then open:
+	N.B: This project is Angular 20 and uses the Angular CLI version 20.3.42, as shown in package.json.
 ng serve -o
 ```
-	-Change the Web Api port from the following File : environment.ts
+
 
