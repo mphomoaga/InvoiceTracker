@@ -35,7 +35,7 @@ namespace InvoiceTracker.Application.Interfaces.Services
          string createdBy,
         CancellationToken cancellationToken);
 
-        Task<byte[]> GenerateInvoiceToDocument(
+        Task<string> GenerateInvoiceToDocument(
         int invoiceId,
         CancellationToken cancellationToken);
     }

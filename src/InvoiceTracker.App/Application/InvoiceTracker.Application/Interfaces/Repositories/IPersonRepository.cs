@@ -5,7 +5,7 @@ namespace InvoiceTracker.Application.Interfaces.Repositories;
 
 public interface IPersonRepository
 {
-    Task<Person?> GetClientById(int personId, CancellationToken cancellationToken);
+    Task<Person> GetClientById(int personId, CancellationToken cancellationToken);
 
     Task<Person> AddNewClient(Person person, CancellationToken cancellationToken);
 

@@ -4,6 +4,9 @@ using InvoiceTracker.Application.Interfaces.Services;
 using InvoiceTracker.Domain.Entities;
 using InvoiceTracker.Domain.Interfaces;
 using InvoiceTracker.Domain.Models;
+using System.Reflection.Metadata;
+using System.Text;
+using System.Xml.Linq;
 
 namespace InvoiceTracker.Application.Services;
 
@@ -51,6 +54,8 @@ public sealed class NotificationManager(
         }
 
         var attachments = new List<EmailAttachment>();
+        var document = string.Empty;
+
         if (email.HasAttachments)
         {
             if (!string.Equals(email.ItemType, "InvoiceStatement", StringComparison.OrdinalIgnoreCase))
@@ -59,17 +64,18 @@ public sealed class NotificationManager(
             }
 
             var invoice = await invoiceService.GetById(email.ItemTypeRef, cancellationToken);
-            var document = await invoiceService.GenerateInvoiceToDocument(email.ItemTypeRef, cancellationToken);
+            document = await invoiceService.GenerateInvoiceToDocument(email.ItemTypeRef, cancellationToken);
             if (invoice is null || document is null)
             {
                 throw new InvalidOperationException("The invoice attachment could not be regenerated.");
             }
 
+            byte[] bytes = Encoding.UTF8.GetBytes(document);
             attachments.Add(new EmailAttachment
             {
-                Content = document,
-                ContentType = "application/pdf",
-                FileName = $"Invoice_{invoice.Reference}.pdf"
+                Content = bytes,
+                ContentType = "text/html",
+                FileName = $"Invoice_{invoice.Reference}.html"
             });
         }
 
@@ -78,7 +84,7 @@ public sealed class NotificationManager(
             email.Subject,
             email.ItemType,
             email.ItemTypeRef,
-            email.Body,
+            document,
             attachments,
             createdBy,
             cancellationToken,

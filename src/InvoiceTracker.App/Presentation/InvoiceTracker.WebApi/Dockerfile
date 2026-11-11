@@ -1,10 +1,11 @@
-# Runtime image
+# Runtime base image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 
-USER $APP_UID
 WORKDIR /app
 
+# Configure ASP.NET Core to listen on all container interfaces
 ENV ASPNETCORE_HTTP_PORTS=44358
+ENV ASPNETCORE_URLS=http://+:44358
 
 EXPOSE 44358
 
@@ -21,22 +22,18 @@ COPY . .
 # Restore NuGet packages
 RUN dotnet restore \
     "Presentation/InvoiceTracker.WebApi/InvoiceTracker.WebApi.csproj" \
-    --source https://api.nuget.org/v3/index.json
-
-# Build the application
-RUN dotnet build \
-    "Presentation/InvoiceTracker.WebApi/InvoiceTracker.WebApi.csproj" \
-    --configuration $BUILD_CONFIGURATION \
-    --no-restore
+    --source "https://api.nuget.org/v3/index.json"
 
 
 # Publish image
 FROM build AS publish
 
+ARG BUILD_CONFIGURATION=Release
+
 RUN dotnet publish \
     "Presentation/InvoiceTracker.WebApi/InvoiceTracker.WebApi.csproj" \
-    --configuration $BUILD_CONFIGURATION \
-    --output /app/out \
+    --configuration ${BUILD_CONFIGURATION} \
+    --output /app/publish \
     --no-restore \
     /p:UseAppHost=false
 
@@ -46,6 +43,9 @@ FROM base AS final
 
 WORKDIR /app
 
-COPY --from=publish /app/out .
+COPY --from=publish /app/publish .
+
+# Run as the built-in non-root .NET container user
+USER $APP_UID
 
 ENTRYPOINT ["dotnet", "InvoiceTracker.WebApi.dll"]

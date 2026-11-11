@@ -2,10 +2,12 @@
 using InvoiceTracker.Application.DTOs;
 using InvoiceTracker.Application.Interfaces.Repositories;
 using InvoiceTracker.Application.Interfaces.Services;
+using InvoiceTracker.Domain.Entities;
 using InvoiceTracker.Domain.Enums;
 using InvoiceTracker.Domain.Interfaces;
 using InvoiceTracker.Domain.Models;
 using System.Globalization;
+using System.Text;
 using Invoice = InvoiceTracker.Domain.Models.Invoice;
 
 namespace InvoiceTracker.Application.Services
@@ -55,45 +57,51 @@ namespace InvoiceTracker.Application.Services
             CancellationToken cancellationToken)
         {
             var invoice = await _invoiceRepository.GetById(invoiceId, cancellationToken);
+
             if (invoice is null)
             {
                 throw new ArgumentException($"Invoice with ID {invoiceId} does not exist.");
             }
 
-            var pdf = await GenerateInvoiceToDocument(invoiceId, cancellationToken);
-            if (pdf is null)
+            var invoiceDoc = await GenerateInvoiceToDocument(invoiceId, cancellationToken);
+
+            if (invoiceDoc is null)
             {
                 throw new InvalidOperationException("Could not generate the invoice document.");
             }
 
-            var attachment = new List<EmailAttachment>();
+            byte[] invoiceAttachement = Encoding.UTF8.GetBytes(invoiceDoc);
 
-            attachment.Add(new EmailAttachment()
+            var attachment = new List<EmailAttachment>
             {
-                Content = pdf,
-                ContentType = "application/pdf",
-                FileName = $"Invoice_{invoice.Reference}.pdf"
-            });
+                new EmailAttachment()
+                {
+                    Content = invoiceAttachement,
+                    ContentType = "text/html",
+                    FileName = $"Invoice_{invoice.Reference}.html"
+                }
+            };
 
             return await _emailService.SendEmail(
                     recipientEmail,
                     "Invoice Statement",
                     "InvoiceStatement",
                     invoice.InvoiceId,
-                    "Please find attached your invoice statement.",
+                    invoiceDoc,
                     attachment,
                     createdBy,
                     cancellationToken
                 );
         }
 
-        public async Task<byte[]> GenerateInvoiceToDocument(int invoiceId, CancellationToken cancellationToken)
+        public async Task<string> GenerateInvoiceToDocument(int invoiceId, CancellationToken cancellationToken)
         {
-            var Invoice = await _invoiceRepository.GetById(invoiceId, cancellationToken);
+            var invoice = await _invoiceRepository.GetById(invoiceId, cancellationToken);
 
-            if (Invoice is null)
+            if (invoice is null)
                 return null;
 
+            var client = await _personRepository.GetClientById(invoice.PersonId,cancellationToken);
             var template = await _emailTemplateRepository.GetEmailTemplate(
                 EmailTemplateNamesEnum.InvoiceStatement.GetDisplayDescription(),
                 cancellationToken);
@@ -101,11 +109,11 @@ namespace InvoiceTracker.Application.Services
             if (string.IsNullOrEmpty(template))
                 return null;
 
-            var invoiceStatus = (InvoiceStatusEnum)Invoice.InvoiceStatusId;
+            var invoiceStatus = (InvoiceStatusEnum)invoice.InvoiceStatusId;
 
-            var invoiceDoc = await FormatInvoiceDocument(Invoice, template, invoiceStatus);
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(invoiceDoc);
-            return bytes;
+            var invoiceDoc = await FormatInvoiceDocument(invoice, client, template, invoiceStatus);
+            
+            return invoiceDoc;
         }
 
         public async Task<Invoice?> GetById(int invoiceId, CancellationToken cancellationToken)
@@ -174,19 +182,21 @@ namespace InvoiceTracker.Application.Services
             };
         }
 
-        private async Task<string> FormatInvoiceDocument(Invoice Invoice, string template, InvoiceStatusEnum invoiceStatus)
+        private async Task<string> FormatInvoiceDocument(Domain.Models.Invoice Invoice,
+       Person person, string template,
+       InvoiceStatusEnum invoiceStatus)
         {
             var InvoiceDoc = template.Replace("[InvoiceNumber]", Invoice.Reference)
                                         .Replace(" [InvoiceStatus]", invoiceStatus.GetDisplayDescription())
-                                        .Replace("[CustomerName]", Invoice.InvoiceDueDate.ToShortDateString())
+                                        .Replace("[CustomerName]", person.FullNames)
                                         .Replace("[InvoiceDate]", Invoice.InvoiceDate.ToShortDateString())
                                         .Replace("[DueDate]", Invoice.InvoiceDueDate.ToShortDateString())
                                         .Replace("[Reference]", Invoice.Reference)
-                                        .Replace("[Subtotal]", Invoice.InvoiceAmount.ToString("C2",
-                                                                CultureInfo.GetCultureInfo("en-ZA")));
-            //TODO: Fix the HTML to PDF converter. The current implementation is not working as expected.
-            // var pdf = await _pdfGenerator.GeneratePdfFromHTML(InvoiceDoc);
-
+                                        .Replace("[AmountDue]", Invoice.InvoiceAmount.ToString("C2",
+                                                                CultureInfo.GetCultureInfo("en-ZA")))
+                                        .Replace("[Amount]", Invoice.InvoiceAmount.ToString("C2",
+                                                                CultureInfo.GetCultureInfo("en-ZA")))
+                                        .Replace("[InvoiceNotes]", $"Current Invoice Status{invoiceStatus.GetDisplayDescription()}");
             return InvoiceDoc;
         }
 

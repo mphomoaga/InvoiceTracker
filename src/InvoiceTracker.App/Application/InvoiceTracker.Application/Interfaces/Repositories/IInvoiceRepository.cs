@@ -1,12 +1,11 @@
-﻿using InvoiceTracker.Application.DTOs;
-using InvoiceTracker.Domain.Enums;
+﻿using InvoiceTracker.Domain.Enums;
 using InvoiceTracker.Domain.Models;
 
 namespace InvoiceTracker.Application.Interfaces.Repositories
 {
     public interface IInvoiceRepository
     {
-        Task<Invoice?> GetById(
+        Task<Invoice> GetById(
         int invoiceId,
         CancellationToken cancellationToken);
         Task<PagedResult<Invoice>> GetPaged(
@@ -14,6 +13,9 @@ namespace InvoiceTracker.Application.Interfaces.Repositories
         int pageSize,
         string? searchTerm,
         CancellationToken cancellationToken);
+
+        Task<List<Invoice>> GetOverdueInvoicesAsync(
+            CancellationToken cancellationToken);
 
         Task<Invoice> AddInvoice(
         Invoice request,

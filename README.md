@@ -1,6 +1,6 @@
 # InvoiceTracker
 
-InvoiceTracker is an enterprise-grade Invoice Management and Payment Tracking platform built using Clean Architecture, .NET 10 Web API, Angular, and Entity Framework Core.
+InvoiceTracker is an Invoice Management and Payment Tracking platform built using Clean Architecture, .NET 10 Web API, Angular, Entity Framework Core, PostgreSQL DB and docker.
 
 ## Solution Architecture
 
@@ -22,7 +22,8 @@ InvoiceTracker/
 	│   │   ├── InvoiceTracker.Application/
 	│   │   ├── InvoiceTracker.Infrastructure/
 	│   │   └── InvoiceTracker.Presentation/
-	│	│		└── InvoiceTracker.WebApi
+	│	│		├── InvoiceTracker.WebApi
+	│	│		├── InvoiceTracker.Worker/
 	│	│		└── invoicetracker-web/
 	│	│
 	│	│
@@ -31,7 +32,7 @@ InvoiceTracker/
 	|
 	├── README.md
 	└── .gitignore
-	└── tests/
+	
 ```
 
 ## Technology Stack
@@ -39,7 +40,7 @@ InvoiceTracker/
 ### Backend
 - .NET 10 Web API
 - Entity Framework Core
-- SQL Server
+- PostgreSQL databse
 - Serilog
 
 ### Frontend
@@ -48,43 +49,41 @@ InvoiceTracker/
 
 
 
-src/environments/environment.ts
-API base URL(IIS Express): https://localhost:44358/api
-
-
 ### deployment
-- Run Web Api on Docker or IIS Express
+- Run Web Api on Docker 
 - Node
 
 ## Getting Started
 ### Database Setup
+	Step 1: Install docker desktop from the docker offical website
+	Step 2: run the docker compaose file that will download postgreSQL into docker. Source path:
+			`InvoiceTracker.Database -> Database setup -> compose.yaml`
+	Step 3: Execute the SQL scripts to create the necessary tables and constraints. Source path
+			`InvoiceTracker.Database -> Data scripts ->PostgreSQL\*.sql`.
 
-### Database: 
-	Step 1: Create new database named: InvoiceTracker.
-	Step 2: Execute the SQL scripts to create the necessary tables and constraints. Scripts can be found in the `src/InvoiceTracker.Database` folder.
-### Backend
-```bash
-cd src/InvoiceTracker.App/Presentation/InvoiceTracker.WebApi
-dotnet restore
-dotnet build
-dotnet run
-```
+### Database connection string configuration
+	Database connection string in project  InvoiceTracker.WebApi and InvoiceTracker.Worker `appsettings.json`
+	Example postgreSQL connection string: `Host=172.18.0.2;Port=5432;Database=InvoiceTracker;Username=Your_Username;Password=Your_Password;SSL Mode=Disable`
 
-### Run the Web API with Docker
+### Backend: Web Api
+	
+	cd src/InvoiceTracker.App/Presentation/InvoiceTracker.WebApi
+	dotnet restore
+	dotnet build
+	dotnet run
+	
 
-Run these commands from the repository root. The Docker build context includes the API and its Application, Domain, and Infrastructure project references.
+### Backend: Web Worker
+	
+	cd src/InvoiceTracker.App/Presentation/InvoiceTracker.Worker
+	dotnet restore
+	dotnet build
+	dotnet run
+	
 
-```powershell
-docker build -f src/InvoiceTracker.App/Presentation/InvoiceTracker.WebApi/Dockerfile -t invoice-tracker-api src/InvoiceTracker.App
-docker run --rm --name invoice-tracker-api -p 44358:44358 -e "ConnectionStrings__InvoiceTrackerDatabase=Server=host.docker.internal,1433;Database=InvoiceTracker;User Id=YOUR_USER;Password=YOUR_PASSWORD;Encrypt=False;TrustServerCertificate=True" invoice-tracker-api
-```
-
-### WebApi: 
-	Create a SQL Server database and update the connection string in `appsettings.json` of the API project.
-
-### Frontend
-```bash
-open front-end folder: src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI/
+### Frontend requirements:
+	bash
+	open front-end folder: src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI/
 
 	-Change the Web Api port from the following File :src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI/environments/environment.ts
 	Minimum setup:
@@ -98,7 +97,11 @@ open front-end folder: src/InvoiceTracker.App/Presentation/InvoiceTracker.WebUI/
 	-npm start
 	-Then open:
 	N.B: This project is Angular 20 and uses the Angular CLI version 20.3.42, as shown in package.json.
-ng serve -o
-```
+	ng serve -o
+
+### Frontend docker container deployment:
+	cd `src\InvoiceTracker.App\Presentation\InvoiceTracker.WebUI`
+	run command as admin in powershell `PS>docker run --rm -p 8080:80 invoice-tracker-web-ui`
+	
 
 

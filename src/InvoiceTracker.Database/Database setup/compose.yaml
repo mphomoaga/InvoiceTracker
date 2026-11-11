@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: invoicetracker-postgresDB
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: InvoiceTracker
+      POSTGRES_USER: invoicetrackerUser
+      POSTGRES_PASSWORD: "Pap@$$w0rd!"
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - invoicetracker_postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U invoicetrackerUser -d InvoiceTracker
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: invoicetracker-pgadmin
+    restart: unless-stopped
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@invoicetracker.com
+      PGADMIN_DEFAULT_PASSWORD: "Pa$$$$w0rd!"
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+
+    ports:
+      - "5050:80"
+
+    volumes:
+      - invoicetracker_pgadmin_data:/var/lib/pgadmin
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  invoicetracker_postgres_data:
+  invoicetracker_pgadmin_data:

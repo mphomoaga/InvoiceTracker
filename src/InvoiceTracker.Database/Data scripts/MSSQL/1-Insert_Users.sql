@@ -1,4 +1,4 @@
-SET IDENTITY_INSERT [security].[User] ON;
+SET IDENTITY_INSERT [security].[Users] ON;
 
 INSERT INTO [security].[User]
 (

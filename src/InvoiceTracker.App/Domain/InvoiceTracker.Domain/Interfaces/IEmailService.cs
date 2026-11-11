@@ -13,5 +13,12 @@ namespace InvoiceTracker.Domain.Interfaces
             string createdBy,
             CancellationToken cancellationToken = default,
             string? cc = null);
+
+        Task<bool> SendReminderEmailAsync(
+            string to,
+            string subject,
+            string htmlBody,
+            IEnumerable<EmailAttachment> attachments,
+            CancellationToken cancellationToken = default);
     }
 }

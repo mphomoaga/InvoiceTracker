@@ -14,7 +14,7 @@ public sealed class InvoiceTrackerDbContextFactory
 
      
         var options = new DbContextOptionsBuilder<InvoiceTrackerDbContext>()
-            .UseSqlServer(connectionString)
+            .UseNpgsql(connectionString)
             .Options;
 
         return new InvoiceTrackerDbContext(options);

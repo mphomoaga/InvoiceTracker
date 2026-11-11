@@ -8,7 +8,7 @@ namespace InvoiceTracker.Infrastructure.Repository;
 
 public class PersonRepository(InvoiceTrackerDbContext context) : IPersonRepository
 {
-    public Task<Person?> GetClientById(int personId, CancellationToken cancellationToken)
+    public Task<Person> GetClientById(int personId, CancellationToken cancellationToken)
     {
         return context.Persons
             .AsNoTracking()

@@ -44,7 +44,7 @@ namespace InvoiceTracker.Infrastructure.Repository
             return MapInvoiceEntityToModel(invoiceEntity);
         }
 
-        public async Task<Invoice?> GetById(int invoiceId, CancellationToken cancellationToken)
+        public async Task<Invoice> GetById(int invoiceId, CancellationToken cancellationToken)
         {
             var invoiceEntity = await _context.Invoices
                 .AsNoTracking()
@@ -91,6 +91,34 @@ namespace InvoiceTracker.Infrastructure.Repository
                 pageNumber,
                 pageSize,
                 totalCount);
+        }
+
+        public async Task<List<Invoice>> GetOverdueInvoicesAsync(
+            CancellationToken cancellationToken)
+        {
+            var overdueCutoff = DateTime.UtcNow.AddDays(-15);
+
+            var excludedStatuses = new[]
+            {
+                (int)InvoiceStatusEnum.Paid,
+                (int)InvoiceStatusEnum.Draft,
+                (int)InvoiceStatusEnum.WrittenOff,
+                (int)InvoiceStatusEnum.Refunded,
+                (int)InvoiceStatusEnum.Overdue,
+            };
+
+            var overdueInvoices = await _context.Invoices
+                .AsNoTracking()
+                .Include(i => i.Person)
+                .Where(i =>
+                    i.IsActive &&
+                    !excludedStatuses.Contains(i.InvoiceStatusId) &&
+                    i.InvoiceDueDate <= overdueCutoff)
+                .ToListAsync(cancellationToken);
+
+            return overdueInvoices
+                .Select(MapInvoiceEntityToModel)
+                .ToList();
         }
 
         public async Task<bool> RemoveInvoice(

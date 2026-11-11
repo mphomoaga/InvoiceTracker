@@ -17,7 +17,7 @@ namespace InvoiceTracker.Infrastructure
         {
             services.AddDbContext<InvoiceTrackerDbContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options.UseNpgsql(connectionString);
             });
 
             services.AddMemoryCache();
@@ -33,7 +33,7 @@ namespace InvoiceTracker.Infrastructure
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPersonRepository, PersonRepository>();
 
-            //PDF Generator
+            ////PDF Generator
             services.AddScoped<IPdfGenerator, PdfGenerator>();
 
             return services;
