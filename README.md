@@ -97,11 +97,13 @@ InvoiceTracker/
 	-npm start
 	-Then open:
 	N.B: This project is Angular 20 and uses the Angular CLI version 20.3.42, as shown in package.json.
-	ng serve -o
+	
 
 ### Frontend docker container deployment:
 	cd `src\InvoiceTracker.App\Presentation\InvoiceTracker.WebUI`
 	run command as admin in powershell `PS>docker run --rm -p 8080:80 invoice-tracker-web-ui`
+### Frontend local run:
+	run the following command `ng serve -o`
 	
 
 
